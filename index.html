@@ -19,51 +19,36 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
   <main class="container">
+    <!-- Welcome / Hero -->
     <section class="hero">
       <h2>Welcome to PCC HelpDesk Support</h2>
       <p>
-        We are here to assist you with IT support, technical issues, and service
-        requests. Use our chatbot to get quick answers or guidance anytime.
+        Use our virtual assistant to troubleshoot common issues. Click “Start Chat” to begin.
       </p>
 
       <div class="actions">
-        <button class="btn primary" id="openChat">
-          Start Chat
-        </button>
-        <a class="btn secondary" href="#" title="Documentation">
-          View Support Info
-        </a>
+        <button class="btn primary" id="openChat">Start Chat</button>
+        <button class="btn secondary" id="resetChat">Reset Chat</button>
       </div>
     </section>
 
-    <!-- Features -->
-    <section class="features">
-      <div class="feature">
-        <h3>💬 Chatbot Assistance</h3>
-        <p>
-          Get instant answers to common IT and HelpDesk questions.
-        </p>
+    <!-- Chatbot Panel -->
+    <section class="chat card" id="chatSection" aria-hidden="true">
+      <div class="chat-header">
+        <div class="chat-title">
+          <strong>Virtual Assistant</strong>
+          <span class="chat-subtitle">PCC HelpDesk Support</span>
+        </div>
+        <button class="btn tiny" id="closeChat" title="Close">Close</button>
       </div>
 
-      <div class="feature">
-        <h3>🛠 IT Support</h3>
-        <p>
-          Guidance for hardware, software, accounts, and system access.
-        </p>
-      </div>
+      <div class="chat-window" id="chatWindow" role="log" aria-live="polite"></div>
 
-      <div class="feature">
-        <h3>📍 PCC Focused</h3>
-        <p>
-          Built specifically to support Polynesian Cultural Center staff and operations.
-        </p>
-      </div>
+      <div class="chat-actions" id="chatActions"></div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container footer-content">
       <p>© 2026 Polynesian Cultural Center HelpDesk Support</p>
@@ -71,11 +56,6 @@
     </div>
   </footer>
 
-  <!-- Placeholder Script -->
-  <script>
-    document.getElementById("openChat").addEventListener("click", () => {
-      alert("Chatbot coming soon!");
-    });
-  </script>
+  <script src="chatbot.js"></script>
 </body>
 </html>
