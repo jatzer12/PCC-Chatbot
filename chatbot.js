@@ -1,3 +1,5 @@
+const chatLauncher = document.getElementById("chatLauncher");
+
 // Simple decision-tree chatbot for PCC HelpDesk Support
 
 const chatSection = document.getElementById("chatSection");
@@ -148,3 +150,17 @@ resetChatBtn.addEventListener("click", () => {
   showChat();
   startConversation();
 });
+
+chatLauncher.addEventListener("click", () => {
+  if (chatSection.classList.contains("show")) {
+    hideChat();
+  } else {
+    showChat();
+    startConversation();
+  }
+});
+
+function hideChat() {
+  chatSection.classList.remove("show");
+  chatSection.setAttribute("aria-hidden", "true");
+}
