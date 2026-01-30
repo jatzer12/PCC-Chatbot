@@ -247,3 +247,28 @@ body {
     bottom: 16px;
   }
 }
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-top: 1px solid #e6e6e6;
+  background: #fff;
+}
+
+#userInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+#userInput:focus {
+  border-color: #999;
+}
+
+#sendBtn {
+  white-space: nowrap;
+}
