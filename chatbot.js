@@ -9,6 +9,42 @@ const chatActions = document.getElementById("chatActions");
 const openChatBtn = document.getElementById("openChat");
 const closeChatBtn = document.getElementById("closeChat");
 const resetChatBtn = document.getElementById("resetChat");
+// ---- AI Backend Config ----
+const CHATBOT_API_URL = "https://pcc-chatbot-api.vercel.app/api/chat";
+
+async function askAI(message, history = []) {
+  addMessage("Thinking...", "bot");
+
+  try {
+    const response = await fetch(CHATBOT_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, history })
+    });
+
+    const data = await response.json();
+
+    // Remove "Thinking..."
+    chatWindow.lastChild.remove();
+
+    if (data.text) {
+      addMessage(data.text, "bot");
+    } else {
+      addMessage(
+        "I’m having trouble answering that. Please contact the PCC Helpdesk at 808-293-3160.",
+        "bot"
+      );
+    }
+  } catch (err) {
+    console.error(err);
+    chatWindow.lastChild.remove();
+    addMessage(
+      "I’m unable to reach the helpdesk system right now. Please call 808-293-3160.",
+      "bot"
+    );
+  }
+}
+
 
 // ---- Helpers ----
 function addMessage(text, who = "bot") {
@@ -47,10 +83,29 @@ function startConversation() {
   addMessage("Are you having a problem with your:");
 
   setChoices([
-    { label: "1. Computer", onClick: () => computerFlow() },
-    { label: "2. Printer", onClick: () => printerFlow() },
-    { label: "3. WiFi / Internet", onClick: () => wifiFlow() }
-  ]);
+  {
+    label: "1. Computer",
+    onClick: () => {
+      addMessage("Computer", "user");
+      askAI("I am having a computer issue at PCC.");
+    }
+  },
+  {
+    label: "2. Printer",
+    onClick: () => {
+      addMessage("Printer", "user");
+      askAI("I am having a printer issue at PCC.");
+    }
+  },
+  {
+    label: "3. WiFi / Internet",
+    onClick: () => {
+      addMessage("WiFi / Internet", "user");
+      askAI("I am having a WiFi or internet issue at PCC.");
+    }
+  }
+]);
+
 }
 
 function computerFlow() {
