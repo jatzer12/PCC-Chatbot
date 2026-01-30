@@ -90,9 +90,6 @@ function startConversation() {
   setChoices([]);
 }
 
-
-}
-
 function computerFlow() {
   addMessage("Computer", "user");
   addMessage("Got it. What issue are you experiencing with your computer?");
