@@ -83,10 +83,13 @@ function hideChat() {
 // ---- Conversation Flow ----
 function startConversation() {
   chatWindow.innerHTML = "";
-  addMessage("Aloha! I am the virtual assistant for PCC HelpDesk Support.");
-  addMessage("Are you having a problem with your:");
+  chatHistory = []; // reset memory
 
+  addMessage("Aloha! I am the virtual assistant for PCC HelpDesk Support.");
+  addMessage("Tell me what’s going on (computer, printer, Wi-Fi/internet, or account access).");
   setChoices([]);
+}
+
 
 }
 
