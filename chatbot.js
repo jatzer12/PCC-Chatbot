@@ -92,14 +92,23 @@ function hideChat() {
 // ---- Conversation Flow ----
 function startConversation() {
   chatWindow.innerHTML = "";
-  chatHistory = []; // reset memory
+  chatHistory = [];
+
+  // System formatting rules (CRITICAL)
+  chatHistory.push({
+    role: "system",
+    content:
+      "You are PCC Helpdesk Virtual Assistant. " +
+      "Format responses with line breaks. " +
+      "Use numbered lists on separate lines. " +
+      "Do NOT put multiple questions on one line. " +
+      "Keep responses friendly and easy to read."
+  });
 
   addMessage("Aloha! I am the virtual assistant for PCC HelpDesk Support.");
-  addMessage("Tell me what’s going on (computer, printer, Wi-Fi/internet, or account access).");
-
-  // No quick buttons
-  setChoices([]);
+  addMessage("Tell me what’s going on with your computer, printer, Wi-Fi, or account access.");
 }
+
 
 // ---- User Sending ----
 async function handleUserSend() {
