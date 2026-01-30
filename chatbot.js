@@ -84,8 +84,7 @@ function startConversation() {
   addMessage("Aloha! I am the virtual assistant for PCC HelpDesk Support.");
   addMessage("Are you having a problem with your:");
 
-  setChoices([
-]);
+  setChoices([]);
 
 }
 
