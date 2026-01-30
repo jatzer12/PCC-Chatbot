@@ -13,6 +13,8 @@ const closeChatBtn = document.getElementById("closeChat");
 const resetChatBtn = document.getElementById("resetChat");
 // ---- AI Backend Config ----
 const CHATBOT_API_URL = "https://pcc-chatbot-api.vercel.app/api/chat";
+let chatHistory = []; // stores conversation for the API
+
 
 async function askAI(message, history = []) {
   addMessage("Thinking...", "bot");
