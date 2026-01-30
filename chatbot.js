@@ -85,27 +85,6 @@ function startConversation() {
   addMessage("Are you having a problem with your:");
 
   setChoices([
-  {
-    label: "1. Computer",
-    onClick: () => {
-      addMessage("Computer", "user");
-      askAI("I am having a computer issue at PCC.");
-    }
-  },
-  {
-    label: "2. Printer",
-    onClick: () => {
-      addMessage("Printer", "user");
-      askAI("I am having a printer issue at PCC.");
-    }
-  },
-  {
-    label: "3. WiFi / Internet",
-    onClick: () => {
-      addMessage("WiFi / Internet", "user");
-      askAI("I am having a WiFi or internet issue at PCC.");
-    }
-  }
 ]);
 
 }
