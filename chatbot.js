@@ -5,6 +5,8 @@ const chatLauncher = document.getElementById("chatLauncher");
 const chatSection = document.getElementById("chatSection");
 const chatWindow = document.getElementById("chatWindow");
 const chatActions = document.getElementById("chatActions");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
 
 const openChatBtn = document.getElementById("openChat");
 const closeChatBtn = document.getElementById("closeChat");
@@ -219,3 +221,22 @@ function hideChat() {
   chatSection.classList.remove("show");
   chatSection.setAttribute("aria-hidden", "true");
 }
+
+async function handleUserSend() {
+  const text = (userInput.value || "").trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  userInput.value = "";
+
+  // Let AI take over troubleshooting
+  await askAI(text);
+}
+
+// Click send
+sendBtn.addEventListener("click", handleUserSend);
+
+// Press Enter to send
+userInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleUserSend();
+});
