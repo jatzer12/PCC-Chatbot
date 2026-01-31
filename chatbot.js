@@ -6,7 +6,7 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const chatBody = document.getElementById("chatBody");
 
-/* 🔴 CHANGE THIS ONLY */
+/* CHANGE THIS ONLY */
 const API_URL = "https://pcc-chatbot-api.vercel.app/api/chat";
 
 function openChat(){
