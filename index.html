@@ -4,23 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PCC HelpDesk Support</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
 
+<body>
   <div class="page-wrap">
-    <h1>Polynesian Cultural Center HelpDesk Support</h1>
-    <p>Welcome! Use the chat assistant in the bottom-right to get help.</p>
+    <header class="hero">
+      <h1>Polynesian Cultural Center HelpDesk Support</h1>
+      <p>Welcome! Use the chat assistant in the bottom-right to get help.</p>
+    </header>
   </div>
 
-  <!-- Floating Launcher -->
-  <button class="chat-launcher" id="chatLauncher" aria-label="Open chat">
-    <div class="dot"></div>
-    <span>HelpDesk</span>
+  <!-- Chat Launcher -->
+  <button class="chat-launcher" id="chatLauncher" aria-label="Open HelpDesk Chat">
+    <span class="launcher-dot"></span>
+    <span class="launcher-text">HelpDesk</span>
   </button>
 
   <!-- Chat Widget -->
-  <section class="chat-widget" id="chatWidget" aria-label="HelpDesk Chat">
+  <section class="chat-widget" id="chatWidget" aria-label="PCC HelpDesk Chat">
     <header class="chat-header">
       <div class="chat-header-left">
         <div class="chat-logo">PCC</div>
@@ -31,8 +33,8 @@
       </div>
 
       <div class="chat-header-actions">
-        <button class="icon-btn" id="chatMinimize" title="Minimize" aria-label="Minimize chat">—</button>
-        <button class="icon-btn" id="chatClose" title="Close" aria-label="Close chat">✕</button>
+        <button class="icon-btn" id="chatMinimize" aria-label="Minimize">—</button>
+        <button class="icon-btn" id="chatClose" aria-label="Close">✕</button>
       </div>
     </header>
 
@@ -40,11 +42,10 @@
       <div class="msg assistant">
         <div class="bubble">
           Aloha! I’m your PCC HelpDesk assistant. What are you having trouble with?
-
           <div class="quick-actions">
             <button data-q="Computer issue">Computer</button>
             <button data-q="Printer issue">Printer</button>
-            <button data-q="WiFi / internet issue">WiFi / Internet</button>
+            <button data-q="WiFi / Internet issue">WiFi / Internet</button>
           </div>
         </div>
       </div>
@@ -52,100 +53,17 @@
 
     <footer class="chat-footer">
       <form class="chat-form" id="chatForm">
-        <input class="chat-input" id="chatInput" placeholder="Type your message…" autocomplete="off" />
+        <input
+          class="chat-input"
+          id="chatInput"
+          placeholder="Type your message…"
+          autocomplete="off"
+        />
         <button class="send-btn" type="submit">Send</button>
       </form>
     </footer>
   </section>
 
-  <script>
-    // ====== UI open/close ======
-    const chatLauncher = document.getElementById("chatLauncher");
-    const chatWidget = document.getElementById("chatWidget");
-    const chatMinimize = document.getElementById("chatMinimize");
-    const chatClose = document.getElementById("chatClose");
-    const chatBody = document.getElementById("chatBody");
-    const chatForm = document.getElementById("chatForm");
-    const chatInput = document.getElementById("chatInput");
-
-    function openChat() {
-      chatWidget.classList.add("open");
-      // focus input after opening
-      setTimeout(() => chatInput.focus(), 50);
-    }
-    function closeChat() {
-      chatWidget.classList.remove("open");
-    }
-
-    chatLauncher.addEventListener("click", () => {
-      if (chatWidget.classList.contains("open")) closeChat();
-      else openChat();
-    });
-    chatMinimize.addEventListener("click", closeChat);
-    chatClose.addEventListener("click", closeChat);
-
-    // Close on Escape
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeChat();
-    });
-
-    // ====== helper to add messages ======
-    function addMessage(role, text) {
-      const wrap = document.createElement("div");
-      wrap.className = `msg ${role}`;
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = text;
-      wrap.appendChild(bubble);
-      chatBody.appendChild(wrap);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    // Quick actions
-    chatBody.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-q]");
-      if (!btn) return;
-      const q = btn.getAttribute("data-q");
-      chatInput.value = q;
-      chatInput.focus();
-    });
-
-    // ====== Hook this to YOUR backend ======
-    // Replace API_URL with your actual endpoint
-    const API_URL = "YOUR_API_ENDPOINT_HERE";
-
-    async function sendToBot(message) {
-      // If you want: show typing indicator, etc.
-      // This assumes your endpoint accepts JSON { message: "..." }
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-
-      if (!res.ok) {
-        throw new Error("API request failed");
-      }
-      return await res.json(); // expected { reply: "..." } (adjust if needed)
-    }
-
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const msg = chatInput.value.trim();
-      if (!msg) return;
-
-      addMessage("user", msg);
-      chatInput.value = "";
-
-      try {
-        const data = await sendToBot(msg);
-        const reply = data.reply ?? data.message ?? "Aloha! I got your message.";
-        addMessage("assistant", reply);
-      } catch (err) {
-        addMessage("assistant", "Sorry—I'm having trouble connecting right now. Please try again, or contact the HelpDesk.");
-      }
-    });
-  </script>
-
+  <script src="./chatbot.js"></script>
 </body>
 </html>
