@@ -17,7 +17,7 @@
 
   <!-- Chat Launcher -->
   <button class="chat-launcher" id="chatLauncher" aria-label="Open HelpDesk Chat">
-    <span class="launcher-dot"></span>
+    <span class="launcher-dot" aria-hidden="true"></span>
     <span class="launcher-text">HelpDesk</span>
   </button>
 
@@ -25,7 +25,7 @@
   <section class="chat-widget" id="chatWidget" aria-label="PCC HelpDesk Chat">
     <header class="chat-header">
       <div class="chat-header-left">
-        <div class="chat-logo">PCC</div>
+        <div class="chat-logo" aria-hidden="true">PCC</div>
         <div class="chat-title">
           <strong>PCC HelpDesk Assistant</strong>
           <small>IT Support • Quick Answers</small>
@@ -33,8 +33,8 @@
       </div>
 
       <div class="chat-header-actions">
-        <button class="icon-btn" id="chatMinimize" aria-label="Minimize">—</button>
-        <button class="icon-btn" id="chatClose" aria-label="Close">✕</button>
+        <button class="icon-btn" id="chatMinimize" aria-label="Minimize chat" title="Minimize">—</button>
+        <button class="icon-btn" id="chatClose" aria-label="Close chat" title="Close">✕</button>
       </div>
     </header>
 
@@ -43,24 +43,21 @@
         <div class="bubble">
           Aloha! I’m your PCC HelpDesk assistant. What are you having trouble with?
           <div class="quick-actions">
-            <button data-q="Computer issue">Computer</button>
-            <button data-q="Printer issue">Printer</button>
-            <button data-q="WiFi / Internet issue">WiFi / Internet</button>
+            <button type="button" data-q="I need help with my computer.">Computer</button>
+            <button type="button" data-q="I need help with a printer issue.">Printer</button>
+            <button type="button" data-q="I need help with WiFi / Internet.">WiFi / Internet</button>
           </div>
+          <div class="hint">Tip: Type <b>contact helpdesk</b> to get the phone number.</div>
         </div>
       </div>
     </main>
 
     <footer class="chat-footer">
-      <form class="chat-form" id="chatForm">
-        <input
-          class="chat-input"
-          id="chatInput"
-          placeholder="Type your message…"
-          autocomplete="off"
-        />
+      <form class="chat-form" id="chatForm" autocomplete="off">
+        <input class="chat-input" id="chatInput" placeholder="Type your message…" autocomplete="off" />
         <button class="send-btn" type="submit">Send</button>
       </form>
+      <div class="footer-note">PCC HelpDesk: 808-293-3160</div>
     </footer>
   </section>
 
