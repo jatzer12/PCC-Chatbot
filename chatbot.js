@@ -134,11 +134,6 @@ function greetingHTML() {
     <div class="msg assistant">
       <div class="bubble">
         Aloha, I'm virtual assistant of Polynesian Cultural Center. How can I help you?
-        <div class="quick-actions">
-          <button type="button" data-q="I need help with my computer.">Computer</button>
-          <button type="button" data-q="I need help with a printer issue.">Printer</button>
-          <button type="button" data-q="I need help with WiFi / Internet.">WiFi / Internet</button>
-        </div>
       </div>
     </div>
   `;
