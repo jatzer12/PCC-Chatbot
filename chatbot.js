@@ -7,7 +7,7 @@ const chatInput = document.getElementById("chatInput");
 const chatBody = document.getElementById("chatBody");
 
 /* 🔴 CHANGE THIS ONLY */
-const API_URL = "YOUR_API_ENDPOINT_HERE";
+const API_URL = "https://github.com/jatzer12/pcc-chatbot-api";
 
 function openChat(){
   chatWidget.classList.add("open");
