@@ -1,150 +1,67 @@
 const chatLauncher = document.getElementById("chatLauncher");
+const chatWidget = document.getElementById("chatWidget");
+const chatClose = document.getElementById("chatClose");
+const chatMinimize = document.getElementById("chatMinimize");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const chatBody = document.getElementById("chatBody");
 
-// UI Elements
-const chatSection = document.getElementById("chatSection");
-const chatWindow = document.getElementById("chatWindow");
-const chatActions = document.getElementById("chatActions");
-const userInput = document.getElementById("userInput");
-const sendBtn = document.getElementById("sendBtn");
+/* 🔴 CHANGE THIS ONLY */
+const API_URL = "YOUR_API_ENDPOINT_HERE";
 
-const openChatBtn = document.getElementById("openChat");
-const closeChatBtn = document.getElementById("closeChat");
-const resetChatBtn = document.getElementById("resetChat");
+function openChat(){
+  chatWidget.classList.add("open");
+  document.body.style.overflow = "hidden";
+  chatLauncher.style.display = "none";
+  setTimeout(()=>chatInput.focus(),50);
+}
 
-// ---- AI Backend Config ----
-const CHATBOT_API_URL = "https://pcc-chatbot-api.vercel.app/api/chat";
+function closeChat(){
+  chatWidget.classList.remove("open");
+  document.body.style.overflow = "";
+  chatLauncher.style.display = "flex";
+}
 
-// Stores conversation for the API (memory)
-let chatHistory = []; // array of { role: "user"|"assistant", content: "..." }
+chatLauncher.onclick = openChat;
+chatClose.onclick = closeChat;
+chatMinimize.onclick = closeChat;
 
-async function askAI(message) {
-  // Add user message to memory BEFORE calling API
-  chatHistory.push({ role: "user", content: message });
+chatForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const msg = chatInput.value.trim();
+  if(!msg) return;
 
-  addMessage("Thinking...", "bot");
+  addMsg("user", msg);
+  chatInput.value = "";
 
-  try {
-    const response = await fetch(CHATBOT_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      // Keep your backend format: message + history
-      body: JSON.stringify({ message, history: chatHistory })
+  try{
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ message: msg })
     });
-
-    const data = await response.json();
-
-    // Remove "Thinking..."
-    if (chatWindow.lastChild) chatWindow.lastChild.remove();
-
-    if (data.text) {
-      addMessage(data.text, "bot");
-
-      // Add assistant reply to memory
-      chatHistory.push({ role: "assistant", content: data.text });
-    } else {
-      addMessage(
-        "I’m having trouble answering that. Please contact the PCC Helpdesk at 808-293-3160.",
-        "bot"
-      );
-    }
-  } catch (err) {
-    console.error(err);
-    if (chatWindow.lastChild) chatWindow.lastChild.remove();
-
-    addMessage(
-      "I’m unable to reach the helpdesk system right now. Please call 808-293-3160.",
-      "bot"
-    );
-  }
-}
-
-// ---- Helpers ----
-function addMessage(text, who = "bot") {
-  const div = document.createElement("div");
-  div.className = `msg ${who}`;
-  div.textContent = text;
-  chatWindow.appendChild(div);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-function setChoices(choices = []) {
-  // We are removing quick buttons, so we’ll just keep this to clear the area
-  chatActions.innerHTML = "";
-  choices.forEach((c) => {
-    const btn = document.createElement("button");
-    btn.className = "choice";
-    btn.textContent = c.label;
-    btn.addEventListener("click", () => c.onClick());
-    chatActions.appendChild(btn);
-  });
-}
-
-function showChat() {
-  chatSection.classList.add("show");
-  chatSection.setAttribute("aria-hidden", "false");
-}
-
-function hideChat() {
-  chatSection.classList.remove("show");
-  chatSection.setAttribute("aria-hidden", "true");
-}
-
-// ---- Conversation Flow ----
-function startConversation() {
-  chatWindow.innerHTML = "";
-  chatHistory = [];
-
-  // System formatting rules (CRITICAL)
-  chatHistory.push({
-    role: "system",
-    content:
-      "You are PCC Helpdesk Virtual Assistant. " +
-      "Format responses with line breaks. " +
-      "Use numbered lists on separate lines. " +
-      "Do NOT put multiple questions on one line. " +
-      "Keep responses friendly and easy to read."
-  });
-
-  addMessage("Aloha! I am the virtual assistant for PCC HelpDesk Support.");
-  addMessage("Tell me what’s going on with your computer, printer, Wi-Fi, or account access.");
-}
-
-
-// ---- User Sending ----
-async function handleUserSend() {
-  const text = (userInput.value || "").trim();
-  if (!text) return;
-
-  addMessage(text, "user");
-  userInput.value = "";
-
-  await askAI(text);
-}
-
-// ---- UI Events ----
-openChatBtn.addEventListener("click", () => {
-  showChat();
-  startConversation();
-});
-
-closeChatBtn.addEventListener("click", () => hideChat());
-
-resetChatBtn.addEventListener("click", () => {
-  showChat();
-  startConversation();
-});
-
-chatLauncher.addEventListener("click", () => {
-  if (chatSection.classList.contains("show")) {
-    hideChat();
-  } else {
-    showChat();
-    startConversation();
+    const data = await res.json();
+    addMsg("assistant", data.reply || "Thanks! A HelpDesk rep will assist you.");
+  }catch{
+    addMsg("assistant","Sorry, I can’t connect right now. Please contact the HelpDesk.");
   }
 });
 
-sendBtn.addEventListener("click", handleUserSend);
-
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleUserSend();
+chatBody.addEventListener("click",e=>{
+  const btn = e.target.closest("button[data-q]");
+  if(btn){
+    chatInput.value = btn.dataset.q;
+    chatInput.focus();
+  }
 });
+
+function addMsg(role,text){
+  const wrap = document.createElement("div");
+  wrap.className = `msg ${role}`;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
