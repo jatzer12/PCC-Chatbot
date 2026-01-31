@@ -7,28 +7,30 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const chatBody = document.getElementById("chatBody");
 
-/** ✅ API endpoint */
+/** ✅ Your API endpoint */
 const API_URL = "https://pcc-chatbot-api.vercel.app/api/chat";
 
-/** ✅ System message for memory object (backend also enforces behavior) */
+/**
+ * Minimal system message for history tracking.
+ * (The real behavior/tone/scope rules are enforced in your backend api/chat.js)
+ */
 const SYSTEM_MESSAGE = {
   role: "system",
-  content:
-    'You are "PCC Virtual Support", the official virtual assistant for the Polynesian Cultural Center (PCC) HelpDesk.'
+  content: 'You are "PCC Virtual Support".'
 };
 
 const STORAGE_KEY = "pcc_helpdesk_chat_history_v1";
+const MAX_NON_SYSTEM_MESSAGES = 24;
 
-/** Load history from localStorage */
 let messages = loadHistory();
-if (!messages.length) {
-  messages = [SYSTEM_MESSAGE];
-}
+if (!messages.length) messages = [SYSTEM_MESSAGE];
 
-/** Render saved history into UI (excluding system) */
+// If we have stored history, render it
 renderHistoryToUI();
 
-/* ---------- UI Open/Close ---------- */
+/* ---------------------------
+   Open / Close Chat
+--------------------------- */
 function openChat() {
   chatWidget.classList.add("open");
   document.body.style.overflow = "hidden";
@@ -46,30 +48,22 @@ chatLauncher.addEventListener("click", openChat);
 chatClose.addEventListener("click", closeChat);
 chatMinimize.addEventListener("click", closeChat);
 
-/* ---------- New Chat / Refresh ---------- */
+/* ---------------------------
+   New Chat (↻)
+--------------------------- */
 chatNew.addEventListener("click", () => {
-  // Clear stored history
   localStorage.removeItem(STORAGE_KEY);
-
-  // Reset memory
   messages = [SYSTEM_MESSAGE];
 
-  // Reset UI back to greeting
+  // Reset UI to greeting (no quick actions)
   chatBody.innerHTML = greetingHTML();
 
-  // Optional: focus input
   setTimeout(() => chatInput.focus(), 50);
 });
 
-/* ---------- Quick Buttons ---------- */
-chatBody.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-q]");
-  if (!btn) return;
-  chatInput.value = btn.dataset.q;
-  chatInput.focus();
-});
-
-/* ---------- Send Message ---------- */
+/* ---------------------------
+   Send Message
+--------------------------- */
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -79,25 +73,31 @@ chatForm.addEventListener("submit", async (e) => {
   addMsg("user", userText);
   chatInput.value = "";
 
+  // Update history
   messages.push({ role: "user", content: userText });
-  messages = trimHistory(messages, 24);
+  messages = trimHistory(messages, MAX_NON_SYSTEM_MESSAGES);
   saveHistory(messages);
+
+  // Show typing indicator
+  const typingEl = showTyping();
 
   try {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }) // ✅ send full history
+      body: JSON.stringify({ messages })
     });
 
     if (!res.ok) {
       const t = await res.text().catch(() => "");
       console.error("API error:", res.status, t);
+      removeTyping(typingEl);
       addMsg("assistant", "Sorry—something went wrong. Please try again.");
       return;
     }
 
     const data = await res.json();
+
     const reply =
       data.reply ??
       data.answer ??
@@ -106,24 +106,56 @@ chatForm.addEventListener("submit", async (e) => {
       data.choices?.[0]?.message?.content ??
       "Sorry—I didn’t receive a reply.";
 
+    removeTyping(typingEl);
     addMsg("assistant", String(reply));
 
+    // Update history
     messages.push({ role: "assistant", content: String(reply) });
-    messages = trimHistory(messages, 24);
+    messages = trimHistory(messages, MAX_NON_SYSTEM_MESSAGES);
     saveHistory(messages);
   } catch (err) {
     console.error("Fetch failed:", err);
+    removeTyping(typingEl);
     addMsg("assistant", "Sorry, I can’t connect right now. Please try again.");
   }
 });
 
-/* ---------- Helpers ---------- */
+/* ---------------------------
+   Typing Indicator
+--------------------------- */
+function showTyping() {
+  const wrap = document.createElement("div");
+  wrap.className = "msg assistant";
+
+  const bubble = document.createElement("div");
+  bubble.className = "typing";
+  bubble.innerHTML = `
+    <span class="typing-dot"></span>
+    <span class="typing-dot"></span>
+    <span class="typing-dot"></span>
+  `;
+
+  wrap.appendChild(bubble);
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+  return wrap;
+}
+
+function removeTyping(el) {
+  if (el && el.parentNode) el.parentNode.removeChild(el);
+}
+
+/* ---------------------------
+   UI Helpers
+--------------------------- */
 function addMsg(role, text) {
   const wrap = document.createElement("div");
   wrap.className = `msg ${role}`;
+
   const bubble = document.createElement("div");
   bubble.className = "bubble";
   bubble.textContent = text;
+
   wrap.appendChild(bubble);
   chatBody.appendChild(wrap);
   chatBody.scrollTop = chatBody.scrollHeight;
@@ -139,6 +171,9 @@ function greetingHTML() {
   `;
 }
 
+/* ---------------------------
+   History (localStorage)
+--------------------------- */
 function loadHistory() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -159,19 +194,18 @@ function saveHistory(history) {
 }
 
 function trimHistory(history, maxNonSystem) {
-  const system = history.find((m) => m.role === "system") || SYSTEM_MESSAGE;
-  const nonSystem = history.filter((m) => m.role !== "system");
-  const trimmed = nonSystem.slice(-maxNonSystem);
-  return [system, ...trimmed];
+  const system = history.find(m => m.role === "system") || SYSTEM_MESSAGE;
+  const nonSystem = history.filter(m => m.role !== "system");
+  return [system, ...nonSystem.slice(-maxNonSystem)];
 }
 
 function renderHistoryToUI() {
-  const ui = messages.filter((m) => m.role !== "system");
+  const ui = messages.filter(m => m.role !== "system");
 
-  // If no prior messages, ensure greeting exists (already in HTML)
+  // If no stored history, leave the HTML greeting as-is
   if (!ui.length) return;
 
-  // If there is history, replace greeting with the history for consistency
+  // Replace content with stored history
   chatBody.innerHTML = "";
   for (const m of ui) {
     addMsg(m.role === "assistant" ? "assistant" : "user", m.content);
