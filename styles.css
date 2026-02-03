@@ -324,3 +324,23 @@ body{
     padding-bottom:90px; /* keep space above chat bubble */
   }
 }
+
+/* ===== Safety net: show launcher even if class/id differs ===== */
+#chat-launcher,
+#pcc-chat-button,
+.chat-button,
+.support-button,
+.launcher,
+.chat-launcher {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + var(--safe-bottom));
+  z-index: 10000;
+}
+
+#chat-widget,
+.chatbox,
+.chat-modal,
+.chat-widget {
+  z-index: 10000;
+}
