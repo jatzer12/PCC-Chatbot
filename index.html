@@ -78,7 +78,54 @@
     </main>
 
   </div>
+<!-- Chat Launcher -->
+<button id="chatLauncher" class="chat-launcher" type="button" aria-label="Open Support Chat">
+  <span class="launcher-dot" aria-hidden="true"></span>
+  <span class="launcher-text">Support</span>
+</button>
 
+<!-- Chat Widget -->
+<section id="chatWidget" class="chat-widget" role="dialog" aria-label="PCC Virtual Support">
+  <header class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-logo">
+        <img src="./logo-website.jpg" alt="PCC Logo">
+      </div>
+      <div class="chat-title">
+        <strong>PCC Virtual Support</strong>
+        <small>HelpDesk & General Support</small>
+      </div>
+    </div>
+
+    <div class="chat-header-actions">
+      <button id="chatNew" class="icon-btn" type="button" title="New chat" aria-label="New chat">↻</button>
+      <button id="chatMinimize" class="icon-btn" type="button" title="Minimize" aria-label="Minimize">—</button>
+      <button id="chatClose" class="icon-btn" type="button" title="Close" aria-label="Close">✕</button>
+    </div>
+  </header>
+
+  <div id="chatBody" class="chat-body">
+    <div class="msg assistant">
+      <div class="bubble">
+        Aloha, I'm virtual assistant of Polynesian Cultural Center. How can I help you?
+      </div>
+    </div>
+  </div>
+
+  <footer class="chat-footer">
+    <form id="chatForm" class="chat-form">
+      <input id="chatInput" class="chat-input" type="text" placeholder="Type your message..." autocomplete="off" />
+      <button class="send-btn" type="submit">Send</button>
+    </form>
+    <div class="footer-note">If needed, call 808-293-3160 or email mis@polynesia.com</div>
+  </footer>
+</section>
+
+<!-- IMPORTANT: keep script at the very bottom so elements exist before JS runs -->
+<script src="./script.js"></script>
+
+
+  
   <!-- Your existing chatbot / JS (unchanged) -->
   <script src="./script.js"></script>
 </body>
