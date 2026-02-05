@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatInput = document.getElementById("chatInput");
   const chatBody = document.getElementById("chatBody");
 
-  // Guard: don’t let the script fail silently
   const required = { chatLauncher, chatWidget, chatClose, chatMinimize, chatNew, chatForm, chatInput, chatBody };
   for (const [k, v] of Object.entries(required)) {
     if (!v) {
@@ -17,67 +16,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /** ✅ Your API endpoint */
   const API_URL = "https://pcc-chatbot-api.vercel.app/api/chat";
 
-  const SYSTEM_MESSAGE = {
-    role: "system",
-    content: 'You are "PCC Virtual Support".'
-  };
+  const STORAGE_KEY = "pcc_helpdesk_chat_history_v2";
+  const MAX_TURNS = 12; // 12 turns = 24 messages (user+assistant)
+  const FETCH_TIMEOUT_MS = 20000;
 
-  const STORAGE_KEY = "pcc_helpdesk_chat_history_v1";
-  const MAX_NON_SYSTEM_MESSAGES = 24;
+  let isSending = false;
+  let previousBodyOverflow = "";
 
-  let messages = loadHistory();
-  if (!messages.length) messages = [SYSTEM_MESSAGE];
+  // We do NOT store system messages in localStorage.
+  let turns = loadTurns(); // [{role, content}, ...] user/assistant only
 
-  renderHistoryToUI();
+  renderTurnsToUI();
 
   function openChat() {
-    chatWidget.classList.add("open");
+    previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    chatWidget.classList.add("open");
     chatLauncher.style.display = "none";
+    chatLauncher.setAttribute("aria-expanded", "true");
     setTimeout(() => chatInput.focus(), 50);
   }
 
   function closeChat() {
     chatWidget.classList.remove("open");
-    document.body.style.overflow = "";
+    document.body.style.overflow = previousBodyOverflow;
+
     chatLauncher.style.display = "inline-flex";
+    chatLauncher.setAttribute("aria-expanded", "false");
+    setTimeout(() => chatLauncher.focus(), 0);
   }
 
   chatLauncher.addEventListener("click", openChat);
   chatClose.addEventListener("click", closeChat);
   chatMinimize.addEventListener("click", closeChat);
 
+  // ESC closes
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && chatWidget.classList.contains("open")) {
+      closeChat();
+    }
+  });
+
   chatNew.addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEY);
-    messages = [SYSTEM_MESSAGE];
+    turns = [];
     chatBody.innerHTML = greetingHTML();
     setTimeout(() => chatInput.focus(), 50);
   });
 
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (isSending) return;
 
     const userText = chatInput.value.trim();
     if (!userText) return;
 
+    isSending = true;
+    setSendingUI(true);
+
     addMsg("user", userText);
     chatInput.value = "";
 
-    messages.push({ role: "user", content: userText });
-    messages = trimHistory(messages, MAX_NON_SYSTEM_MESSAGES);
-    saveHistory(messages);
+    // store turn
+    turns.push({ role: "user", content: userText });
+    turns = trimTurns(turns, MAX_TURNS);
+    saveTurns(turns);
 
     const typingEl = showTyping();
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+      // Build messages for API: include ONLY recent turns (no system in localStorage)
+      const messagesForAPI = turns.map(t => ({ role: t.role, content: t.content }));
+
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages })
+        body: JSON.stringify({ messages: messagesForAPI }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeout);
 
       if (!res.ok) {
         const t = await res.text().catch(() => "");
@@ -99,15 +123,31 @@ document.addEventListener("DOMContentLoaded", () => {
       removeTyping(typingEl);
       addMsg("assistant", String(reply));
 
-      messages.push({ role: "assistant", content: String(reply) });
-      messages = trimHistory(messages, MAX_NON_SYSTEM_MESSAGES);
-      saveHistory(messages);
+      turns.push({ role: "assistant", content: String(reply) });
+      turns = trimTurns(turns, MAX_TURNS);
+      saveTurns(turns);
     } catch (err) {
       console.error("Fetch failed:", err);
       removeTyping(typingEl);
-      addMsg("assistant", "Sorry, I can’t connect right now. Please try again.");
+
+      const msg =
+        err?.name === "AbortError"
+          ? "Sorry—this is taking too long. Please try again."
+          : "Sorry, I can’t connect right now. Please try again.";
+
+      addMsg("assistant", msg);
+    } finally {
+      isSending = false;
+      setSendingUI(false);
+      setTimeout(() => chatInput.focus(), 50);
     }
   });
+
+  function setSendingUI(sending) {
+    const btn = chatForm.querySelector("button[type='submit']");
+    if (btn) btn.disabled = sending;
+    chatInput.disabled = sending;
+  }
 
   function showTyping() {
     const wrap = document.createElement("div");
@@ -148,42 +188,40 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <div class="msg assistant">
         <div class="bubble">
-          Aloha, I'm virtual assistant of Polynesian Cultural Center. How can I help you?
+          Aloha, I'm PCC Virtual Support. How can I help you today?
         </div>
       </div>
     `;
   }
 
-  function loadHistory() {
+  function loadTurns() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(m => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string");
     } catch {
       return [];
     }
   }
 
-  function saveHistory(history) {
+  function saveTurns(history) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
     } catch {}
   }
 
-  function trimHistory(history, maxNonSystem) {
-    const system = history.find(m => m.role === "system") || SYSTEM_MESSAGE;
-    const nonSystem = history.filter(m => m.role !== "system");
-    return [system, ...nonSystem.slice(-maxNonSystem)];
+  function trimTurns(history, maxTurns) {
+    // Keep last N turns; each turn = user+assistant, but we’ll be tolerant if it’s not perfectly paired.
+    const maxMessages = maxTurns * 2;
+    return history.slice(-maxMessages);
   }
 
-  function renderHistoryToUI() {
-    const ui = messages.filter(m => m.role !== "system");
-    if (!ui.length) return;
+  function renderTurnsToUI() {
+    chatBody.innerHTML = greetingHTML();
+    if (!turns.length) return;
 
-    chatBody.innerHTML = "";
-    for (const m of ui) {
-      addMsg(m.role === "assistant" ? "assistant" : "user", m.content);
-    }
+    for (const m of turns) addMsg(m.role, m.content);
   }
 });
