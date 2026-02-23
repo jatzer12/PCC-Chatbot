@@ -9,6 +9,16 @@
       "id": "printer-issue",
       "title": "Printer Issues (Cannot Print)",
       "path": "kb/printer-issue.md"
+    },
+        {
+      "id": "counterpoint-issue.md",
+      "title": "CounterPoint issues",
+      "path": "kb/counterpoint-issue.md"
+    },
+        {
+      "id": "assetstag-printer-issue.md",
+      "title": "Assets Tag printer issue",
+      "path": "kb/assetstag-printer-issue.md"
     }
   ]
 }
